@@ -13,16 +13,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    // We wrap the app in ClerkProvider and force the dark theme to match your brutalist UI
     <ClerkProvider appearance={{ baseTheme: dark }}>
       <html lang="en">
         <head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-          <link href="https://fonts.googleapis.com/css2?family=Anton&family=JetBrains+Mono:wght@400;700&family=Inter:wght@400;700&display=swap" rel="stylesheet" />
+          {/* Changed from Anton to Poppins for that sleek AniWatch consumer look */}
+          <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
           <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
         </head>
-        <body className="bg-[#050505] text-white font-sans antialiased" style={{ fontFamily: "'Inter', sans-serif" }}>
+        <body className="bg-[#0a0a0a] text-gray-200 font-sans antialiased" style={{ fontFamily: "'Poppins', sans-serif" }}>
           {children}
         </body>
       </html>

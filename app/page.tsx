@@ -1,7 +1,6 @@
 import { fetchTrendingAnime } from "@/lib/api";
 import Link from "next/link";
 import ContinueWatching from "@/components/ContinueWatching";
-// UPDATED FOR CLERK CORE 3
 import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 
 export default async function Home() {
@@ -9,77 +8,117 @@ export default async function Home() {
   const topAnime = trendingAnime[0];
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#050505]">
+    <main className="min-h-screen bg-[#0a0a0a] pb-12">
       
-      {/* NAVIGATION */}
-      <nav className="flex justify-between items-center p-6 border-b border-[#222] bg-black/90 sticky top-0 z-50">
-        <div className="text-3xl uppercase" style={{ fontFamily: "'Anton', sans-serif" }}>
-          PROJECT<span className="text-[#ff2e00]">X</span>
+      {/* ANIWATCH STYLE NAVBAR - GLASSMORPHISM */}
+      <nav className="flex justify-between items-center px-6 py-4 fixed w-full top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5">
+        <div className="flex items-center gap-8">
+          <Link href="/" className="text-2xl font-black text-white tracking-wider">
+            PROJECT<span className="text-[#ff2e00]">X</span>
+          </Link>
+          <div className="hidden md:flex gap-6 font-medium text-sm text-gray-300">
+            <Link href="/" className="hover:text-[#ff2e00] transition-colors">Home</Link>
+            <Link href="#" className="hover:text-[#ff2e00] transition-colors">Movies</Link>
+            <Link href="#" className="hover:text-[#ff2e00] transition-colors">TV Series</Link>
+            <Link href="#" className="hover:text-[#ff2e00] transition-colors">Most Popular</Link>
+            <Link href="#" className="hover:text-[#ff2e00] transition-colors">Top Airing</Link>
+          </div>
         </div>
-        
-        <form action="/search" method="GET" className="hidden md:flex flex-1 max-w-md mx-8">
-          <input type="text" name="q" placeholder="SEARCH DATABASE..." className="w-full bg-[#111] border border-[#333] text-white px-4 py-1 font-mono text-sm focus:border-[#ff2e00] outline-none transition" />
-          <button type="submit" className="bg-[#333] text-white px-4 hover:bg-[#ff2e00] hover:text-black transition"><i className="fas fa-search"></i></button>
-        </form>
 
-        <div className="flex gap-8 text-sm text-gray-400 items-center" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          <Link href="/" className="hidden md:block hover:text-[#ff2e00] transition">HOME</Link>
-          
-          {/* THE NEW IDENTITY MATRIX (CORE 3 SYNTAX) */}
+        <div className="hidden md:flex flex-1 max-w-sm mx-6">
+          <form action="/search" method="GET" className="w-full relative">
+            <input type="text" name="q" placeholder="Search anime..." className="w-full bg-white/10 rounded-full px-5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#ff2e00] transition placeholder-gray-400" />
+            <button type="submit" className="absolute right-4 top-2 text-gray-400 hover:text-white"><i className="fas fa-search"></i></button>
+          </form>
+        </div>
+
+        <div className="flex items-center gap-4">
           <Show when="signed-out">
             <SignInButton mode="modal">
-              <button className="px-6 py-2 bg-[#ff2e00] text-black font-bold text-sm uppercase hover:bg-white transition" style={{ fontFamily: "'Anton', sans-serif" }}>
-                Sign In
+              <button className="px-5 py-2 bg-[#ff2e00] text-white font-bold text-sm rounded-full hover:scale-105 transition shadow-[0_0_15px_rgba(255,46,0,0.4)]">
+                Login
               </button>
             </SignInButton>
           </Show>
-          
           <Show when="signed-in">
             <UserButton />
           </Show>
         </div>
       </nav>
 
-      {/* HERO SECTION */}
-      <section className="flex flex-col items-center justify-center p-6 md:p-12 w-full max-w-6xl mx-auto border-b border-[#222]">
-        <div className="w-full mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
-          <div>
-            <h1 className="text-4xl md:text-5xl uppercase text-white leading-none tracking-wide" style={{ fontFamily: "'Anton', sans-serif" }}>
-              {topAnime ? (topAnime.title_english || topAnime.title) : "SYSTEM STANDBY"}
-            </h1>
-            <p className="text-[#ff2e00] mt-2 text-sm uppercase" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-              {topAnime ? `TOP TRENDING // SCORE: ${topAnime.score}` : "ESTABLISHING CONNECTION..."}
-            </p>
+      {/* ANIWATCH STYLE HERO SECTION */}
+      {topAnime && (
+        <section className="relative w-full h-[65vh] md:h-[80vh] flex items-center pt-16">
+          {/* Background Image & Fade Gradients */}
+          <div className="absolute inset-0 w-full h-full overflow-hidden">
+            <img src={topAnime.images.jpg.large_image_url} alt="Hero" className="w-full h-full object-cover opacity-50 blur-sm md:blur-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent"></div>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent w-full md:w-3/4"></div>
           </div>
-          {topAnime && (
-            <Link href={`/anime/${topAnime.mal_id}`} className="px-6 py-2 bg-[#ff2e00] text-black font-bold uppercase text-sm hover:bg-white transition" style={{ fontFamily: "'Anton', sans-serif" }}>
-              WATCH NOW <i className="fas fa-play ml-2"></i>
-            </Link>
-          )}
-        </div>
-      </section>
 
-      {/* INJECTING THE MEMORY ENGINE */}
-      <ContinueWatching />
+          {/* Hero Content */}
+          <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
+            <div className="max-w-2xl">
+              <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-4 line-clamp-2 drop-shadow-lg">
+                {topAnime.title_english || topAnime.title}
+              </h1>
+              <div className="flex items-center gap-4 text-xs font-semibold mb-6">
+                <span className="flex items-center gap-1 text-yellow-400"><i className="fas fa-star"></i> {topAnime.score || "N/A"}</span>
+                <span className="bg-white/20 px-2 py-1 rounded text-white">{topAnime.type}</span>
+                <span className="bg-white/20 px-2 py-1 rounded text-white hidden md:inline-block">{topAnime.status}</span>
+                <span className="bg-[#ff2e00] px-2 py-1 rounded text-white font-bold">HD</span>
+              </div>
+              <p className="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 md:line-clamp-4">
+                {topAnime.synopsis || "No synopsis available for this title. Engaging emergency protocols."}
+              </p>
+              <div className="flex gap-4">
+                <Link href={`/anime/${topAnime.mal_id}`} className="px-8 py-3 bg-[#ff2e00] text-white font-bold rounded-full hover:scale-105 transition shadow-[0_0_20px_rgba(255,46,0,0.5)] flex items-center gap-2">
+                  <i className="fas fa-play-circle text-lg"></i> Watch Now
+                </Link>
+                <button className="px-8 py-3 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition flex items-center gap-2">
+                  Detail <i className="fas fa-chevron-right text-xs"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
 
-      {/* MASSIVE TRENDING GRID */}
-      <section className="p-6 md:px-12 pb-12 max-w-7xl mx-auto w-full">
-        <h2 className="text-2xl text-white uppercase mb-6 tracking-wide mt-6" style={{ fontFamily: "'Anton', sans-serif" }}>GLOBAL DATABASE //</h2>
+      {/* MEMORY ENGINE */}
+      <div className="max-w-7xl mx-auto w-full mt-[-2rem] relative z-20 px-6">
+        <ContinueWatching />
+      </div>
+
+      {/* ANIWATCH STYLE GRID */}
+      <section className="px-6 max-w-7xl mx-auto w-full mt-12">
+        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+          <span className="w-1 h-6 bg-[#ff2e00] rounded-full"></span>
+          Trending Anime
+        </h2>
         
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
           {trendingAnime.map((anime: any) => (
-            <Link href={`/anime/${anime.mal_id}`} key={anime.mal_id} className="group cursor-pointer block">
-              <div className="relative aspect-[3/4] overflow-hidden border border-[#333] group-hover:border-[#ff2e00] transition duration-300">
+            <Link href={`/anime/${anime.mal_id}`} key={anime.mal_id} className="group flex flex-col gap-2">
+              <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#111]">
                 <img 
                   src={anime.images.jpg.large_image_url} 
                   alt={anime.title} 
-                  className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
                 />
-                <div className="absolute top-2 left-2 bg-[#ff2e00] text-black text-xs font-bold px-2 py-1 uppercase" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-                  {anime.score ? `★ ${anime.score}` : "HD"}
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <i className="fas fa-play text-4xl text-white drop-shadow-lg"></i>
+                </div>
+                <div className="absolute bottom-2 left-2 flex gap-1">
+                  {anime.episodes && (
+                    <span className="bg-[#ff2e00] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
+                      EP {anime.episodes}
+                    </span>
+                  )}
                 </div>
               </div>
-              <h3 className="text-white mt-3 font-bold truncate text-sm">{anime.title_english || anime.title}</h3>
+              <h3 className="text-gray-200 font-medium text-sm line-clamp-2 group-hover:text-[#ff2e00] transition">
+                {anime.title_english || anime.title}
+              </h3>
             </Link>
           ))}
         </div>
