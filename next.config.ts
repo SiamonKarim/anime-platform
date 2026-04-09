@@ -7,7 +7,6 @@ const nextConfig = {
       { protocol: 'https', hostname: 'img.flawless.me' },
     ],
   },
-  // This allows the video player to work correctly in production
   transpilePackages: ['@vidstack/react'],
 };
 

@@ -2,7 +2,6 @@ import { fetchTrendingAnime } from "@/lib/api";
 import Link from "next/link";
 
 export default async function Home() {
-  // Fetch the massive 25-item grid
   const trendingAnime = await fetchTrendingAnime();
   const topAnime = trendingAnime[0];
 
@@ -25,7 +24,7 @@ export default async function Home() {
         </div>
       </nav>
 
-      {/* HERO SECTION (No Player, Just a 'Watch Now' routing button) */}
+      {/* HERO SECTION */}
       <section className="flex flex-col items-center justify-center p-6 md:p-12 w-full max-w-6xl mx-auto border-b border-[#222]">
         <div className="w-full mb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
