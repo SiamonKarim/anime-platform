@@ -56,13 +56,22 @@ export const searchAnime = async (query: string) => {
 // 3. AUTOMATION & VIDEO ENGINE (FIXED TYPES)
 export const fetchVideoStream = async (animeTitle: string, ep: number) => {
   try {
+    // 1. Clean the title
     const slug = animeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const res = await fetch(`${CORS_PROXY}${STREAM_API}/${slug}-episode-${ep}`);
+    const targetUrl = `${STREAM_API}/${slug}-episode-${ep}`;
     
-    if (!res.ok) return [];
-    const data = await res.json();
+    console.log("🚀 SEARCHING FOR VIDEO AT:", targetUrl);
 
-    // EXPLICIT TYPE: Tell TypeScript what is in the array
+    const res = await fetch(`${CORS_PROXY}${targetUrl}`);
+    
+    if (!res.ok) {
+      console.error("❌ VIDEO SERVER REJECTED THE REQUEST. Status:", res.status);
+      return [];
+    }
+
+    const data = await res.json();
+    console.log("📦 DATA RECEIVED FROM VIDEO SERVER:", data);
+
     const sources: { name: string; url: string }[] = [];
     
     if (data.data?.stream?.multi) {
@@ -74,8 +83,11 @@ export const fetchVideoStream = async (animeTitle: string, ep: number) => {
       });
     }
     
+    if (sources.length === 0) console.warn("⚠️ NO VIDEO SOURCES FOUND IN THE DATA.");
     return sources;
+
   } catch (err) { 
+    console.error("🔥 CRITICAL ERROR IN VIDEO ENGINE:", err);
     return []; 
   }
 };
