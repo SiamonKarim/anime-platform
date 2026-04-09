@@ -89,7 +89,7 @@ export default async function Home() {
         <ContinueWatching />
       </div>
 
-      {/* ANIWATCH STYLE GRID */}
+      {/* ANIWATCH STYLE GRID WITH CINEMATIC HOVER CARDS */}
       <section className="px-6 max-w-7xl mx-auto w-full mt-12">
         <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
           <span className="w-1 h-6 bg-[#ff2e00] rounded-full"></span>
@@ -100,15 +100,31 @@ export default async function Home() {
           {trendingAnime.map((anime: any) => (
             <Link href={`/anime/${anime.mal_id}`} key={anime.mal_id} className="group flex flex-col gap-2">
               <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#111]">
+                
+                {/* The Poster */}
                 <img 
                   src={anime.images.jpg.large_image_url} 
                   alt={anime.title} 
-                  className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
+                  className="w-full h-full object-cover group-hover:blur-sm group-hover:scale-110 transition-all duration-500"
                 />
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <i className="fas fa-play text-4xl text-white drop-shadow-lg"></i>
+
+                {/* The Hover Info Card Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
+                  <i className="fas fa-play-circle text-4xl text-[#ff2e00] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-lg scale-75 group-hover:scale-100 transition-transform duration-300"></i>
+                  
+                  <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                    <div className="flex items-center gap-2 text-[10px] font-bold mb-2">
+                      <span className="text-yellow-400"><i className="fas fa-star"></i> {anime.score || "N/A"}</span>
+                      <span className="text-white bg-white/20 px-1.5 py-0.5 rounded">{anime.type || "TV"}</span>
+                    </div>
+                    <p className="text-gray-300 text-xs line-clamp-4 leading-relaxed">
+                      {anime.synopsis || "No synopsis available."}
+                    </p>
+                  </div>
                 </div>
-                <div className="absolute bottom-2 left-2 flex gap-1">
+
+                {/* Default Tag (Disappears on hover) */}
+                <div className="absolute bottom-2 left-2 flex gap-1 group-hover:opacity-0 transition-opacity duration-300">
                   {anime.episodes && (
                     <span className="bg-[#ff2e00] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
                       EP {anime.episodes}
@@ -116,6 +132,8 @@ export default async function Home() {
                   )}
                 </div>
               </div>
+
+              {/* Title underneath */}
               <h3 className="text-gray-200 font-medium text-sm line-clamp-2 group-hover:text-[#ff2e00] transition">
                 {anime.title_english || anime.title}
               </h3>
