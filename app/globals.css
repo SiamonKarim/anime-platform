@@ -1,3 +1,20 @@
+@import "tailwindcss";
+
+body {
+  background-color: #09090b;
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+/* MAGIC SCROLLBAR HIDER */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
 /* Custom Vertical Scrollbar for Episodes */
 .scrollbar-thin::-webkit-scrollbar {
   width: 6px;
