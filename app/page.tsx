@@ -1,7 +1,8 @@
 import { fetchTrendingAnime } from "@/lib/api";
 import Link from "next/link";
 import ContinueWatching from "@/components/ContinueWatching";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+// UPDATED FOR CLERK CORE 3
+import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 
 export default async function Home() {
   const trendingAnime = await fetchTrendingAnime();
@@ -24,17 +25,18 @@ export default async function Home() {
         <div className="flex gap-8 text-sm text-gray-400 items-center" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
           <Link href="/" className="hidden md:block hover:text-[#ff2e00] transition">HOME</Link>
           
-          {/* THE IDENTITY MATRIX */}
-          <SignedOut>
+          {/* THE NEW IDENTITY MATRIX (CORE 3 SYNTAX) */}
+          <Show when="signed-out">
             <SignInButton mode="modal">
               <button className="px-6 py-2 bg-[#ff2e00] text-black font-bold text-sm uppercase hover:bg-white transition" style={{ fontFamily: "'Anton', sans-serif" }}>
                 Sign In
               </button>
             </SignInButton>
-          </SignedOut>
-          <SignedIn>
+          </Show>
+          
+          <Show when="signed-in">
             <UserButton />
-          </SignedIn>
+          </Show>
         </div>
       </nav>
 
