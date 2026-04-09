@@ -1,5 +1,5 @@
 import AnimePlayer from "@/components/AnimePlayer";
-import { fetchAnimeById, fetchAnimeEpisodes, fetchVideoLink } from "@/lib/api";
+import { fetchAnimeById, fetchAnimeEpisodes } from "@/lib/api";
 import Link from "next/link";
 
 export default async function AnimeDetailsPage({ 
@@ -20,9 +20,6 @@ export default async function AnimeDetailsPage({
   const currentEpData = episodes.find((e: any) => e.mal_id === currentEpNumber) || episodes[0];
   const animeName = anime.title_english || anime.title;
 
-  // FETCH THE DYNAMIC VIDEO URL
-  const streamUrl = await fetchVideoLink(animeName, currentEpNumber);
-
   return (
     <main className="min-h-screen bg-[#050505] flex flex-col">
       <nav className="p-6 border-b border-[#222]">
@@ -39,9 +36,8 @@ export default async function AnimeDetailsPage({
           </div>
         </div>
 
-        {/* INJECT SMART PLAYER */}
+        {/* The Smart Player now handles the video hunting internally */}
         <AnimePlayer 
-          streamUrl={streamUrl} 
           posterUrl={anime.images.jpg.large_image_url}
           animeId={params.id}
           animeTitle={animeName}
