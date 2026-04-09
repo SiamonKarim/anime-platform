@@ -1,45 +1,69 @@
 const JIKAN_URL = 'https://api.jikan.moe/v4';
+// Use your Render URL here - make sure it ends with /
+const CORS_PROXY = 'https://cors-qpo5.onrender.com/'; 
+const VIDEO_API = 'https://api.consumet.org/anime/gogoanime/watch';
 
-const safeFetch = async (endpoint: string, limit = 24) => {
+export const fetchTrendingAnime = async () => {
   try {
-    // We use Next.js revalidation to automatically update the site data every hour
-    const res = await fetch(`${JIKAN_URL}${endpoint}&limit=${limit}`, { next: { revalidate: 3600 } });
-    if (!res.ok) throw new Error("API Blocked");
+    const res = await fetch(`${JIKAN_URL}/top/anime?filter=airing&limit=20`);
     const data = await res.json();
     return data.data || [];
-  } catch (error) {
-    return []; 
-  }
+  } catch (err) { return []; }
 };
 
-// AUTOMATED CATEGORIES
-export const fetchTrendingAnime = () => safeFetch('/top/anime?filter=airing');
-export const fetchPopularAnime = () => safeFetch('/top/anime?filter=bypopularity');
-export const fetchFavoriteAnime = () => safeFetch('/top/anime?filter=favorite');
-// The "Coming Soon" Section
-export const fetchUpcomingAnime = () => safeFetch('/seasons/upcoming?');
+export const fetchPopularAnime = async () => {
+  try {
+    const res = await fetch(`${JIKAN_URL}/top/anime?filter=bypopularity&limit=20`);
+    const data = await res.json();
+    return data.data || [];
+  } catch (err) { return []; }
+};
 
-// REAL ANIME DATA EXTRACTION
+export const fetchUpcomingAnime = async () => {
+  try {
+    const res = await fetch(`${JIKAN_URL}/seasons/upcoming?limit=20`);
+    const data = await res.json();
+    return data.data || [];
+  } catch (err) { return []; }
+};
+
+export const fetchFavoriteAnime = async () => {
+  try {
+    const res = await fetch(`${JIKAN_URL}/top/anime?filter=favorite&limit=20`);
+    const data = await res.json();
+    return data.data || [];
+  } catch (err) { return []; }
+};
+
 export const fetchAnimeById = async (id: string) => {
   try {
     const res = await fetch(`${JIKAN_URL}/anime/${id}/full`);
-    if (!res.ok) throw new Error("API Blocked");
     const data = await res.json();
-    return data.data || null;
-  } catch (error) { return null; }
+    return data.data;
+  } catch (err) { return null; }
 };
 
-// UNIVERSAL EPISODE CALCULATOR
+// HELPER: CALCULATE REAL EPISODE COUNTS
 export const calculateEpisodes = (anime: any) => {
-  // 1. If the database knows the exact total (e.g., completed shows), use it.
-  if (anime.episodes) return anime.episodes;
-  
-  // 2. If it is currently airing, MyAnimeList might say "null". 
-  // We check if it's a known long-running show.
-  const name = anime.title_english || anime.title || "";
-  if (name.includes("One Piece")) return 1100; // Safe minimum for One Piece
+  if (anime?.episodes) return anime.episodes;
+  const name = anime?.title_english || anime?.title || "";
+  if (name.includes("One Piece")) return 1100;
   if (name.includes("Detective Conan")) return 1120;
-  
-  // 3. Default ongoing season fallback
   return 12;
+};
+
+// AUTOMATION: FETCH REAL VIDEO THROUGH YOUR PROXY
+export const fetchVideoStream = async (animeTitle: string, ep: number) => {
+  try {
+    const cleanId = animeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    const res = await fetch(`${CORS_PROXY}${VIDEO_API}/${cleanId}-episode-${ep}`);
+    const data = await res.json();
+    
+    const rawUrl = data.sources?.find((s: any) => s.quality === '1080p')?.url || data.sources?.[0]?.url;
+    
+    return rawUrl ? `${CORS_PROXY}${rawUrl}` : null;
+  } catch (err) {
+    console.error("Video Fetch Error:", err);
+    return null;
+  }
 };
