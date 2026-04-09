@@ -2,7 +2,6 @@ import { fetchTrendingAnime, fetchPopularAnime, fetchUpcomingAnime, fetchFavorit
 import Link from "next/link";
 import ContinueWatching from "@/components/ContinueWatching";
 
-// 1. REUSABLE ANIME ROW COMPONENT
 const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => {
   if (!animeList || animeList.length === 0) return null;
   return (
@@ -25,10 +24,7 @@ const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:opacity-40" 
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                <i className="fas fa-play-circle text-5xl text-[#ff4d4d] drop-shadow-xl"></i>
-              </div>
-              <div className="absolute top-2 left-2 flex flex-col gap-1">
-                <span className="bg-[#ff4d4d] text-white text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider">HD</span>
+                <i className="fas fa-play-circle text-5xl text-[#ff4d4d]"></i>
               </div>
             </div>
             <h3 className="text-gray-300 font-medium text-sm truncate group-hover:text-[#ff4d4d] transition-colors">
@@ -41,7 +37,6 @@ const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => 
   );
 };
 
-// 2. MAIN HOME COMPONENT
 export default async function Home() {
   const [trending, popular, upcoming, favorites] = await Promise.all([
     fetchTrendingAnime(),
@@ -54,8 +49,6 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#09090b] pb-20 overflow-x-hidden">
-      
-      {/* HERO SPOTLIGHT */}
       {heroAnime && (
         <section className="relative w-full h-[70vh] md:h-[85vh] flex items-center">
           <div className="absolute inset-0 w-full h-full">
@@ -80,11 +73,8 @@ export default async function Home() {
         </section>
       )}
 
-      {/* CONTENT GRID */}
       <div className="relative z-20 -mt-10 md:-mt-16 max-w-[1600px] mx-auto px-4 md:px-8">
         <div className="flex flex-col lg:flex-row gap-10">
-          
-          {/* LEFT COLUMN: SCROLLING ROWS */}
           <div className="flex-grow flex flex-col gap-2">
             <ContinueWatching />
             <AnimeRow title="Trending Now" animeList={trending.slice(1)} />
@@ -93,7 +83,6 @@ export default async function Home() {
             <AnimeRow title="Coming Soon" animeList={upcoming} />
           </div>
 
-          {/* RIGHT COLUMN: TOP 10 SIDEBAR */}
           <aside className="w-full lg:w-80 flex-none">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sticky top-24">
               <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
@@ -119,12 +108,8 @@ export default async function Home() {
                   </Link>
                 ))}
               </div>
-              <button className="w-full mt-8 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-gray-400 transition-all uppercase tracking-widest border border-white/5">
-                View Full List
-              </button>
             </div>
           </aside>
-
         </div>
       </div>
     </main>
