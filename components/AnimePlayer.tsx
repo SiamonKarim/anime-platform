@@ -14,12 +14,13 @@ interface AnimePlayerProps {
 }
 
 export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNumber }: AnimePlayerProps) {
-  // We start with the default video, then try to overwrite it with the real one
-  const [streamUrl, setStreamUrl] = useState("https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8");
+  // We start with a universally unblockable Google MP4 video as the absolute fallback
+  const fallbackVideo = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+  const [streamUrl, setStreamUrl] = useState(fallbackVideo);
   const [status, setStatus] = useState("HUNTING FOR STREAM...");
 
   useEffect(() => {
-    // 1. Save History
+    // Save Watch History
     const historyData = {
       id: animeId,
       title: animeTitle,
@@ -29,7 +30,7 @@ export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNum
     };
     localStorage.setItem('projectX_history', JSON.stringify(historyData));
 
-    // 2. CLIENT-SIDE VIDEO HUNTER (Bypasses Vercel Server Blocks)
+    // Try to hunt for the real Anime stream
     const fetchRealVideo = async () => {
       try {
         const cleanTitle = animeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
@@ -42,8 +43,10 @@ export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNum
             setStreamUrl(realUrl);
             setStatus("REAL STREAM ACQUIRED.");
           } else {
-            setStatus("STREAM NOT FOUND. PLAYING FALLBACK.");
+            setStatus("STREAM API EMPTY. PLAYING FALLBACK.");
           }
+        } else {
+          setStatus("API SERVERS DOWN. PLAYING FALLBACK.");
         }
       } catch (error) {
         setStatus("SCRAPER BLOCKED BY CORS. PLAYING FALLBACK.");
@@ -55,8 +58,7 @@ export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNum
 
   return (
     <div className="w-full flex flex-col gap-2">
-      <div className="w-full aspect-video bg-black rounded-lg overflow-hidden border border-[#333] shadow-[0_0_40px_rgba(255,46,0,0.1)] relative">
-        {/* Removed crossOrigin attribute to fix the broken poster image issue */}
+      <div className="w-full aspect-video bg-black rounded-xl overflow-hidden shadow-[0_0_30px_rgba(255,46,0,0.15)] border border-white/10 relative">
         <MediaPlayer 
           title={`Episode ${episodeNumber}`} 
           src={streamUrl} 
@@ -64,12 +66,12 @@ export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNum
           className="w-full h-full absolute top-0 left-0"
         >
           <MediaProvider>
-            {posterUrl && <Poster className="vds-poster object-cover opacity-50" src={posterUrl} alt="Cover" />}
+            {posterUrl && <Poster className="vds-poster object-cover opacity-60" src={posterUrl} alt="Cover" />}
           </MediaProvider>
           <DefaultVideoLayout icons={defaultLayoutIcons} color="#ff2e00" />
         </MediaPlayer>
       </div>
-      <div className="text-xs font-mono text-[#ff2e00] text-right uppercase">
+      <div className="text-xs font-bold text-[#ff2e00] text-right tracking-wider uppercase">
         {status}
       </div>
     </div>
