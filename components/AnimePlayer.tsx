@@ -1,42 +1,53 @@
 "use client";
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 import { MediaPlayer, MediaProvider, Poster } from '@vidstack/react';
 import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
 
-export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNumber, videoUrl }: any) {
-  
+export default function AnimePlayer({ posterUrl, animeTitle, episodeNumber, sources }: any) {
+  // Default to the first server (usually 'main')
+  const [activeSource, setActiveSource] = useState(sources?.[0]?.url || "");
+
   useEffect(() => {
-    // Save history to the Memory Engine
-    localStorage.setItem('projectX_history', JSON.stringify({
-      id: animeId,
-      title: animeTitle,
-      episode: episodeNumber,
-      image: posterUrl,
-      url: `/anime/${animeId}?ep=${episodeNumber}`
-    }));
-  }, [animeId, animeTitle, episodeNumber, posterUrl]);
+    if (sources?.length > 0) setActiveSource(sources[0].url);
+  }, [sources]);
 
   return (
-    <div className="w-full max-w-5xl mx-auto rounded-2xl overflow-hidden shadow-2xl bg-black border border-white/10 relative mt-8">
-      <div className="absolute top-4 left-4 z-50 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#ff4d4d] tracking-widest uppercase border border-white/10">
-        Playing Ep {episodeNumber}
+    <div className="w-full flex flex-col gap-4">
+      <div className="w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/5 relative">
+        <MediaPlayer 
+          title={`${animeTitle} - EP ${episodeNumber}`} 
+          src={activeSource} 
+          playsInline
+          className="w-full h-full"
+        >
+          <MediaProvider>
+            {posterUrl && <Poster className="vds-poster object-cover opacity-60" src={posterUrl} alt="Cover" />}
+          </MediaProvider>
+          <DefaultVideoLayout icons={defaultLayoutIcons} color="#ff4d4d" />
+        </MediaPlayer>
       </div>
-      
-      {/* If a real video stream is passed, it plays it. Otherwise, it loads a placeholder stream */}
-      <MediaPlayer 
-        title={`${animeTitle} - Episode ${episodeNumber}`} 
-        src={videoUrl || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"} 
-        playsInline
-        className="w-full aspect-video"
-      >
-        <MediaProvider>
-          {posterUrl && <Poster className="vds-poster object-cover opacity-80" src={posterUrl} alt="Cover" />}
-        </MediaProvider>
-        <DefaultVideoLayout icons={defaultLayoutIcons} color="#ff4d4d" />
-      </MediaPlayer>
+
+      {/* SERVER SWITCHER UI */}
+      <div className="flex flex-wrap gap-3 items-center bg-white/5 p-4 rounded-xl border border-white/10">
+        <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Switch Server:</span>
+        {sources?.map((source: any, index: number) => (
+          <button
+            key={index}
+            onClick={() => setActiveSource(source.url)}
+            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${
+              activeSource === source.url 
+                ? "bg-[#ff4d4d] text-white shadow-[0_0_10px_rgba(255,77,77,0.5)]" 
+                : "bg-white/10 text-gray-300 hover:bg-white/20"
+            }`}
+          >
+            {source.name}
+          </button>
+        ))}
+        {(!sources || sources.length === 0) && <span className="text-xs text-red-500">No servers found for this episode.</span>}
+      </div>
     </div>
   );
 }

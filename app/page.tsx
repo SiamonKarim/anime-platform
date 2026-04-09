@@ -1,21 +1,28 @@
 import { fetchTrendingAnime, fetchPopularAnime, fetchUpcomingAnime, fetchFavoriteAnime } from "@/lib/api";
 import Link from "next/link";
 import ContinueWatching from "@/components/ContinueWatching";
-import { Show, SignInButton, UserButton } from "@clerk/nextjs";
 
 const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => {
   if (!animeList || animeList.length === 0) return null;
   return (
-    <section className="mt-8 md:mt-12 max-w-[1600px] mx-auto px-4 md:px-8">
+    <section className="mt-8 md:mt-12">
       <h2 className="text-xl md:text-2xl font-bold text-white mb-4 flex items-center gap-3">
         <span className="w-1.5 h-6 bg-[#ff4d4d] rounded-full shadow-[0_0_10px_rgba(255,77,77,0.8)]"></span>
         {title}
       </h2>
       <div className="flex gap-4 md:gap-5 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory no-scrollbar">
         {animeList.map((anime: any) => (
-          <Link href={`/anime/${anime.mal_id}`} key={anime.mal_id} className="group flex-none w-[140px] md:w-[180px] lg:w-[200px] snap-start flex flex-col gap-3 relative">
+          <Link 
+            href={`/anime/${anime.mal_id}`} 
+            key={anime.mal_id} 
+            className="group flex-none w-[140px] md:w-[180px] lg:w-[200px] snap-start flex flex-col gap-3 relative"
+          >
             <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-[#18181b] shadow-lg border border-white/5">
-              <img src={anime.images?.jpg?.large_image_url} alt={anime.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:opacity-40" />
+              <img 
+                src={anime.images?.jpg?.large_image_url} 
+                alt={anime.title} 
+                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:opacity-40" 
+              />
               <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
                 <i className="fas fa-play-circle text-5xl text-[#ff4d4d] drop-shadow-xl scale-75 group-hover:scale-100 transition-transform duration-300"></i>
               </div>
@@ -50,11 +57,11 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#09090b] pb-20 overflow-x-hidden">
-      {/* Hero Section */}
+      {/* 1. HERO SECTION */}
       {heroAnime && (
         <section className="relative w-full h-[70vh] md:h-[85vh] flex items-center">
           <div className="absolute inset-0 w-full h-full">
-            <img src={heroAnime.images?.jpg?.large_image_url} className="w-full h-full object-cover" />
+            <img src={heroAnime.images?.jpg?.large_image_url} className="w-full h-full object-cover" alt="" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#09090b] via-[#09090b]/40 to-transparent"></div>
             <div className="absolute inset-0 bg-gradient-to-r from-[#09090b] via-[#09090b]/80 to-transparent w-full md:w-3/4"></div>
           </div>
@@ -77,13 +84,52 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Database Ecosystem */}
-      <div className="relative z-20 -mt-10 md:-mt-16">
-        <ContinueWatching />
-        <AnimeRow title="Trending This Week" animeList={trending.slice(1)} />
-        <AnimeRow title="All-Time Popular" animeList={popular} />
-        <AnimeRow title="Fan Favorites" animeList={favorites} />
-        <AnimeRow title="Coming Soon (Upcoming Seasons)" animeList={upcoming} />
+      {/* 2. MAIN CONTENT AREA (GRID) */}
+      <div className="relative z-20 -mt-10 md:-mt-16 max-w-[1600px] mx-auto px-4 md:px-8">
+        <div className="flex flex-col lg:flex-row gap-10">
+          
+          {/* LEFT: CONTENT ROWS */}
+          <div className="flex-grow flex flex-col gap-4">
+            <ContinueWatching />
+            <AnimeRow title="Trending This Week" animeList={trending.slice(1)} />
+            <AnimeRow title="All-Time Popular" animeList={popular} />
+            <AnimeRow title="Fan Favorites" animeList={favorites} />
+            <AnimeRow title="Coming Soon" animeList={upcoming} />
+          </div>
+
+          {/* RIGHT: TOP 10 SIDEBAR */}
+          <aside className="w-full lg:w-80 flex-none">
+            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sticky top-24">
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+                <i className="fas fa-chart-line text-[#ff4d4d]"></i> TOP 10
+              </h2>
+              <div className="space-y-6">
+                {trending.slice(0, 10).map((anime: any, index: number) => (
+                  <Link href={`/anime/${anime.mal_id}`} key={anime.mal_id} className="flex gap-4 group">
+                    <span className={`text-2xl font-black italic ${index < 3 ? 'text-[#ff4d4d]' : 'text-gray-700'}`}>
+                      {String(index + 1).padStart(2, '0')}
+                    </span>
+                    <div className="w-14 h-20 bg-white/5 rounded-lg overflow-hidden flex-none">
+                      <img src={anime.images.jpg.large_image_url} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="" />
+                    </div>
+                    <div className="flex flex-col justify-center min-w-0">
+                      <h4 className="text-sm font-bold text-gray-200 line-clamp-1 group-hover:text-[#ff4d4d] transition-colors">
+                        {anime.title_english || anime.title}
+                      </h4>
+                      <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">
+                        <i className="fas fa-star text-yellow-500 mr-1"></i> {anime.score || "N/A"} • {anime.type}
+                      </p>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              <button className="w-full mt-8 py-3 bg-white/5 hover:bg-white/10 rounded-xl text-xs font-bold text-gray-400 transition-all uppercase tracking-widest border border-white/5">
+                View Full List
+              </button>
+            </div>
+          </aside>
+
+        </div>
       </div>
     </main>
   );

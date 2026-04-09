@@ -27,8 +27,8 @@ export default async function WatchPage(props: Props) {
   const currentEpNumber = epQuery ? parseInt(epQuery as string) : 1;
   const animeName = anime.title_english || anime.title;
   
-  // FETCH THE REAL STREAM
-  const liveVideoUrl = await fetchVideoStream(animeName, currentEpNumber);
+  // FETCH THE MULTIPLE SOURCES (Main, Backup, etc.)
+  const liveVideoSources = await fetchVideoStream(animeName, currentEpNumber);
   const totalEpisodesCount = calculateEpisodes(anime);
 
   return (
@@ -39,12 +39,13 @@ export default async function WatchPage(props: Props) {
       </div>
 
       <section className="relative z-10 w-full px-4 md:px-8 max-w-[1600px] mx-auto pt-24">
+        {/* Pass the array of sources to the Player */}
         <AnimePlayer 
           posterUrl={anime.images?.jpg?.large_image_url}
           animeId={params.id}
           animeTitle={animeName}
           episodeNumber={currentEpNumber}
-          videoUrl={liveVideoUrl} 
+          sources={liveVideoSources} 
         />
         
         <div className="max-w-5xl mx-auto mt-8">
@@ -58,8 +59,14 @@ export default async function WatchPage(props: Props) {
       </section>
 
       <section className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 mt-12 border-t border-white/5 pt-8">
-        <h3 className="text-xl font-bold text-white mb-6">Episodes ({totalEpisodesCount})</h3>
-        <EpisodeSelector totalEpisodes={totalEpisodesCount} currentEpisode={currentEpNumber} animeId={params.id} />
+        <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+          <i className="fas fa-list text-[#ff4d4d]"></i> Episodes ({totalEpisodesCount})
+        </h3>
+        <EpisodeSelector 
+          totalEpisodes={totalEpisodesCount} 
+          currentEpisode={currentEpNumber} 
+          animeId={params.id} 
+        />
       </section>
     </main>
   );
