@@ -13,23 +13,14 @@ export default async function Home() {
       {/* ANIWATCH STYLE NAVBAR - GLASSMORPHISM */}
       <nav className="flex justify-between items-center px-6 py-4 fixed w-full top-0 z-50 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center gap-8">
-          <Link href="/" className="text-2xl font-black text-white tracking-wider">
+          <Link href="/" className="text-2xl font-black text-white tracking-wider" style={{ fontFamily: "'Anton', sans-serif" }}>
             PROJECT<span className="text-[#ff2e00]">X</span>
           </Link>
           <div className="hidden md:flex gap-6 font-medium text-sm text-gray-300">
             <Link href="/" className="hover:text-[#ff2e00] transition-colors">Home</Link>
             <Link href="#" className="hover:text-[#ff2e00] transition-colors">Movies</Link>
             <Link href="#" className="hover:text-[#ff2e00] transition-colors">TV Series</Link>
-            <Link href="#" className="hover:text-[#ff2e00] transition-colors">Most Popular</Link>
-            <Link href="#" className="hover:text-[#ff2e00] transition-colors">Top Airing</Link>
           </div>
-        </div>
-
-        <div className="hidden md:flex flex-1 max-w-sm mx-6">
-          <form action="/search" method="GET" className="w-full relative">
-            <input type="text" name="q" placeholder="Search anime..." className="w-full bg-white/10 rounded-full px-5 py-2 text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#ff2e00] transition placeholder-gray-400" />
-            <button type="submit" className="absolute right-4 top-2 text-gray-400 hover:text-white"><i className="fas fa-search"></i></button>
-          </form>
         </div>
 
         <div className="flex items-center gap-4">
@@ -49,35 +40,28 @@ export default async function Home() {
       {/* ANIWATCH STYLE HERO SECTION */}
       {topAnime && (
         <section className="relative w-full h-[65vh] md:h-[80vh] flex items-center pt-16">
-          {/* Background Image & Fade Gradients */}
           <div className="absolute inset-0 w-full h-full overflow-hidden">
             <img src={topAnime.images.jpg.large_image_url} alt="Hero" className="w-full h-full object-cover opacity-50 blur-sm md:blur-none" />
             <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/40 to-transparent"></div>
             <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a] via-[#0a0a0a]/80 to-transparent w-full md:w-3/4"></div>
           </div>
 
-          {/* Hero Content */}
           <div className="relative z-10 max-w-7xl mx-auto px-6 w-full">
             <div className="max-w-2xl">
-              <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-4 line-clamp-2 drop-shadow-lg">
+              <h1 className="text-4xl md:text-6xl font-black text-white leading-tight mb-4 drop-shadow-lg" style={{ fontFamily: "'Anton', sans-serif" }}>
                 {topAnime.title_english || topAnime.title}
               </h1>
               <div className="flex items-center gap-4 text-xs font-semibold mb-6">
                 <span className="flex items-center gap-1 text-yellow-400"><i className="fas fa-star"></i> {topAnime.score || "N/A"}</span>
-                <span className="bg-white/20 px-2 py-1 rounded text-white">{topAnime.type}</span>
-                <span className="bg-white/20 px-2 py-1 rounded text-white hidden md:inline-block">{topAnime.status}</span>
                 <span className="bg-[#ff2e00] px-2 py-1 rounded text-white font-bold">HD</span>
               </div>
-              <p className="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 md:line-clamp-4">
-                {topAnime.synopsis || "No synopsis available for this title. Engaging emergency protocols."}
+              <p className="text-gray-300 text-sm md:text-base mb-8 line-clamp-3">
+                {topAnime.synopsis || "Engaging emergency protocols. Data classified."}
               </p>
               <div className="flex gap-4">
                 <Link href={`/anime/${topAnime.mal_id}`} className="px-8 py-3 bg-[#ff2e00] text-white font-bold rounded-full hover:scale-105 transition shadow-[0_0_20px_rgba(255,46,0,0.5)] flex items-center gap-2">
                   <i className="fas fa-play-circle text-lg"></i> Watch Now
                 </Link>
-                <button className="px-8 py-3 bg-white/10 text-white font-bold rounded-full hover:bg-white/20 transition flex items-center gap-2">
-                  Detail <i className="fas fa-chevron-right text-xs"></i>
-                </button>
               </div>
             </div>
           </div>
@@ -89,51 +73,26 @@ export default async function Home() {
         <ContinueWatching />
       </div>
 
-      {/* ANIWATCH STYLE GRID WITH CINEMATIC HOVER CARDS */}
+      {/* ANIWATCH STYLE GRID */}
       <section className="px-6 max-w-7xl mx-auto w-full mt-12">
-        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-white mb-6 flex items-center gap-2" style={{ fontFamily: "'Anton', sans-serif" }}>
           <span className="w-1 h-6 bg-[#ff2e00] rounded-full"></span>
-          Trending Anime
+          TRENDING DATABASE
         </h2>
         
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 md:gap-6">
           {trendingAnime.map((anime: any) => (
             <Link href={`/anime/${anime.mal_id}`} key={anime.mal_id} className="group flex flex-col gap-2">
               <div className="relative aspect-[3/4] rounded-xl overflow-hidden bg-[#111]">
-                
-                {/* The Poster */}
                 <img 
                   src={anime.images.jpg.large_image_url} 
                   alt={anime.title} 
-                  className="w-full h-full object-cover group-hover:blur-sm group-hover:scale-110 transition-all duration-500"
+                  className="w-full h-full object-cover group-hover:scale-110 transition duration-300"
                 />
-
-                {/* The Hover Info Card Overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/80 to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
-                  <i className="fas fa-play-circle text-4xl text-[#ff2e00] absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 drop-shadow-lg scale-75 group-hover:scale-100 transition-transform duration-300"></i>
-                  
-                  <div className="translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <div className="flex items-center gap-2 text-[10px] font-bold mb-2">
-                      <span className="text-yellow-400"><i className="fas fa-star"></i> {anime.score || "N/A"}</span>
-                      <span className="text-white bg-white/20 px-1.5 py-0.5 rounded">{anime.type || "TV"}</span>
-                    </div>
-                    <p className="text-gray-300 text-xs line-clamp-4 leading-relaxed">
-                      {anime.synopsis || "No synopsis available."}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Default Tag (Disappears on hover) */}
-                <div className="absolute bottom-2 left-2 flex gap-1 group-hover:opacity-0 transition-opacity duration-300">
-                  {anime.episodes && (
-                    <span className="bg-[#ff2e00] text-white text-[10px] font-bold px-1.5 py-0.5 rounded shadow-sm">
-                      EP {anime.episodes}
-                    </span>
-                  )}
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <i className="fas fa-play text-4xl text-[#ff2e00] drop-shadow-lg"></i>
                 </div>
               </div>
-
-              {/* Title underneath */}
               <h3 className="text-gray-200 font-medium text-sm line-clamp-2 group-hover:text-[#ff2e00] transition">
                 {anime.title_english || anime.title}
               </h3>
