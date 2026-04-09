@@ -2,14 +2,24 @@ import AnimePlayer from "@/components/AnimePlayer";
 import { fetchAnimeById, fetchAnimeEpisodes } from "@/lib/api";
 import Link from "next/link";
 
-export default async function WatchPage({ params, searchParams }: any) {
-  // 1. Fetch the anime details FIRST
-  const anime = await fetchAnimeById(params.id);
+// 1. Next.js 15 Strict Types: URLs are now Promises
+type Props = {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+};
 
-  // 2. NOW fetch the episodes using the newly acquired episode count
+export default async function WatchPage(props: Props) {
+  // 2. We MUST await the URL parameters before using them
+  const params = await props.params;
+  const searchParams = await props.searchParams;
+
+  // 3. Now we safely fetch the database using the awaited ID
+  const anime = await fetchAnimeById(params.id);
   const episodes = await fetchAnimeEpisodes(params.id, anime.episodes);
 
-  const epNumber = searchParams.ep ? parseInt(searchParams.ep) : 1;
+  // 4. Safely parse the episode number
+  const epQuery = searchParams.ep;
+  const epNumber = epQuery ? parseInt(epQuery as string) : 1;
   const animeName = anime.title_english || anime.title;
 
   return (
@@ -43,13 +53,12 @@ export default async function WatchPage({ params, searchParams }: any) {
         </div>
       </section>
 
-      {/* Scrollable Episode Selector (Crucial for One Piece) */}
+      {/* Scrollable Episode Selector */}
       <section className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 mt-12">
         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
           <i className="fas fa-list text-[#ff4d4d]"></i> Episodes ({episodes.length})
         </h3>
         
-        {/* We limit the height and add a scrollbar so 1000+ episodes fit cleanly */}
         <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#ff4d4d] scrollbar-track-white/5">
           {episodes.map((ep: any) => {
             const isActive = ep.mal_id === epNumber;
