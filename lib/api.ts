@@ -54,40 +54,48 @@ export const searchAnime = async (query: string) => {
 };
 
 // 3. AUTOMATION & VIDEO ENGINE (FIXED TYPES)
+// --- THE SMART SEARCH-FIRST ENGINE ---
 export const fetchVideoStream = async (animeTitle: string, ep: number) => {
   try {
-    // 1. Clean the title
-    const slug = animeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-    const targetUrl = `${STREAM_API}/${slug}-episode-${ep}`;
+    // 1. Clean the title for a broad search
+    const searchTitle = animeTitle.split(':')[0].split('(')[0].trim();
     
-    console.log("🚀 SEARCHING FOR VIDEO AT:", targetUrl);
-
-    const res = await fetch(`${CORS_PROXY}${targetUrl}`);
+    // 2. SEARCH the video provider first to get the REAL ID
+    // We use Gogoanime as the provider via Consumet/Amvstr
+    const searchUrl = `https://api.consumet.org/anime/gogoanime/${encodeURIComponent(searchTitle)}`;
+    const searchRes = await fetch(`${CORS_PROXY}${searchUrl}`);
+    const searchData = await searchRes.json();
     
-    if (!res.ok) {
-      console.error("❌ VIDEO SERVER REJECTED THE REQUEST. Status:", res.status);
+    // Pick the first search result (the most relevant one)
+    const officialId = searchData.results?.[0]?.id;
+    
+    if (!officialId) {
+      console.error("❌ Could not find a matching ID for:", searchTitle);
       return [];
     }
 
-    const data = await res.json();
-    console.log("📦 DATA RECEIVED FROM VIDEO SERVER:", data);
+    console.log("✅ Match Found! Using ID:", officialId);
+
+    // 3. Now fetch the stream using that official ID
+    const streamUrl = `https://api.consumet.org/anime/gogoanime/watch/${officialId}-episode-${ep}`;
+    const streamRes = await fetch(`${CORS_PROXY}${streamUrl}`);
+    const streamData = await streamRes.json();
 
     const sources: { name: string; url: string }[] = [];
     
-    if (data.data?.stream?.multi) {
-      Object.keys(data.data.stream.multi).forEach((serverName) => {
+    if (streamData.sources) {
+      streamData.sources.forEach((s: any) => {
         sources.push({ 
-          name: serverName.toUpperCase(), 
-          url: `${CORS_PROXY}${data.data.stream.multi[serverName]}` 
+          name: s.quality.toUpperCase(), 
+          url: `${CORS_PROXY}${s.url}` 
         });
       });
     }
     
-    if (sources.length === 0) console.warn("⚠️ NO VIDEO SOURCES FOUND IN THE DATA.");
     return sources;
 
   } catch (err) { 
-    console.error("🔥 CRITICAL ERROR IN VIDEO ENGINE:", err);
+    console.error("🔥 Stream Fetch Error:", err);
     return []; 
   }
 };
