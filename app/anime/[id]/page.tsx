@@ -5,7 +5,7 @@ import Link from "next/link";
 export default async function WatchPage({ params, searchParams }: any) {
   const [anime, episodes] = await Promise.all([
     fetchAnimeById(params.id),
-    fetchAnimeEpisodes(params.id)
+    fetchAnimeEpisodes(params.id, anime.episodes)
   ]);
 
   const epNumber = searchParams.ep ? parseInt(searchParams.ep) : 1;

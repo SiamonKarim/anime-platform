@@ -1,17 +1,9 @@
 const JIKAN_URL = 'https://api.jikan.moe/v4';
 
 const OFFLINE_ANIME = {
-  mal_id: 9999,
-  title: "System Offline",
-  title_english: "System Offline",
-  status: "Completed",
-  episodes: 12,
-  score: 9.8,
-  synopsis: "The public API server is currently rate-limiting us. This is a secure offline fallback.",
-  images: { jpg: { large_image_url: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101922-PEn1CTc93DQl.jpg" } }
+  mal_id: 9999, title: "System Offline", title_english: "System Offline", status: "Completed", episodes: 12, score: 9.8, synopsis: "API rate limit reached.", images: { jpg: { large_image_url: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101922-PEn1CTc93DQl.jpg" } }
 };
 
-// HELPER FUNCTION: Safely fetch data or return fallback array
 const safeFetch = async (endpoint: string, limit = 15) => {
   try {
     const res = await fetch(`${JIKAN_URL}${endpoint}&limit=${limit}`, { next: { revalidate: 3600 } });
@@ -23,13 +15,11 @@ const safeFetch = async (endpoint: string, limit = 15) => {
   }
 };
 
-// FETCH MULTIPLE CATEGORIES
 export const fetchTrendingAnime = () => safeFetch('/top/anime?filter=airing');
 export const fetchPopularAnime = () => safeFetch('/top/anime?filter=bypopularity');
 export const fetchUpcomingAnime = () => safeFetch('/seasons/upcoming?');
 export const fetchFavoriteAnime = () => safeFetch('/top/anime?filter=favorite');
 
-// DETAILS & EPISODES (Bulletproof)
 export const fetchAnimeById = async (id: string) => {
   try {
     const res = await fetch(`${JIKAN_URL}/anime/${id}/full`);
@@ -39,13 +29,23 @@ export const fetchAnimeById = async (id: string) => {
   } catch (error) { return { ...OFFLINE_ANIME, mal_id: id }; }
 };
 
-export const fetchAnimeEpisodes = async (id: string) => {
+// DYNAMIC EPISODE GENERATOR
+export const fetchAnimeEpisodes = async (id: string, totalEpisodesFromDetails: number | null) => {
   try {
+    // We fetch the first page of episodes from the API for titles
     const res = await fetch(`${JIKAN_URL}/anime/${id}/episodes`);
-    if (!res.ok) throw new Error("API Blocked");
     const data = await res.json();
-    return data.data?.length ? data.data : Array.from({ length: 12 }, (_, i) => ({ mal_id: i + 1, title: `Episode ${i + 1}` }));
+    
+    // If the API returns detailed episodes, use them. 
+    // Otherwise, mathematically generate the exact number of episodes based on the show's total length (e.g. 1000+ for One Piece)
+    if (data.data && data.data.length > 0) {
+      return data.data;
+    } else {
+      const count = totalEpisodesFromDetails || 12; // Fallback to 12 if still airing and unknown
+      return Array.from({ length: count }, (_, i) => ({ mal_id: i + 1, title: `Episode ${i + 1}` }));
+    }
   } catch (error) { 
-    return Array.from({ length: 12 }, (_, i) => ({ mal_id: i + 1, title: `Offline Episode ${i + 1}` }));
+    const count = totalEpisodesFromDetails || 12;
+    return Array.from({ length: count }, (_, i) => ({ mal_id: i + 1, title: `Episode ${i + 1}` }));
   }
 };
