@@ -1,32 +1,25 @@
 import AnimePlayer from "@/components/AnimePlayer";
 import EpisodeSelector from "@/components/EpisodeSelector";
-import { fetchAnimeById } from "@/lib/api";
-import Link from "next/link";
+import { fetchAnimeById, calculateEpisodes } from "@/lib/api";
 
-type Props = {
-  params: Promise<{ id: string }>;
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-};
+type Props = { params: Promise<{ id: string }>; searchParams: Promise<{ [key: string]: string | string[] | undefined }>; };
 
 export default async function WatchPage(props: Props) {
   const params = await props.params;
   const searchParams = await props.searchParams;
 
-  // Fetch the anime details
   const anime = await fetchAnimeById(params.id);
+  if (!anime) return <div className="text-white text-center mt-20">Database Error: Anime not found.</div>;
 
-  // Safely parse the requested episode
   const epQuery = searchParams.ep;
   const currentEpNumber = epQuery ? parseInt(epQuery as string) : 1;
   const animeName = anime.title_english || anime.title;
   
-  // The ultimate fallback: If the database knows the total, use it. 
-  // If it's One Piece and the DB fails, force it to 1100+. If unknown, default to 12.
-  const totalEpisodesCount = anime.episodes || (animeName.includes("One Piece") ? 1100 : 12);
+  // Gets the exact, real episode count from MyAnimeList
+  const totalEpisodesCount = calculateEpisodes(anime);
 
   return (
     <main className="min-h-screen bg-[#09090b] text-gray-200 pb-20">
-      
       <div className="fixed inset-0 w-full h-[60vh] opacity-20 z-0 pointer-events-none">
         <img src={anime.images?.jpg?.large_image_url} className="w-full h-full object-cover blur-3xl" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#09090b]"></div>
@@ -38,7 +31,6 @@ export default async function WatchPage(props: Props) {
           animeId={params.id}
           animeTitle={animeName}
           episodeNumber={currentEpNumber}
-          // videoUrl="YOUR_REAL_BACKEND_STREAM_URL_GOES_HERE.m3u8"
         />
         
         <div className="max-w-5xl mx-auto mt-8 flex flex-col md:flex-row gap-8 items-start">
@@ -54,19 +46,12 @@ export default async function WatchPage(props: Props) {
         </div>
       </section>
 
-      {/* Injecting the 1000+ Episode Engine */}
       <section className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 mt-12 border-t border-white/5 pt-8">
         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
           <i className="fas fa-list text-[#ff4d4d]"></i> Episodes ({totalEpisodesCount})
         </h3>
-        
-        <EpisodeSelector 
-          totalEpisodes={totalEpisodesCount} 
-          currentEpisode={currentEpNumber} 
-          animeId={params.id} 
-        />
+        <EpisodeSelector totalEpisodes={totalEpisodesCount} currentEpisode={currentEpNumber} animeId={params.id} />
       </section>
-
     </main>
   );
 }

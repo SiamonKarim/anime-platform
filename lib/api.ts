@@ -1,51 +1,45 @@
 const JIKAN_URL = 'https://api.jikan.moe/v4';
 
-const OFFLINE_ANIME = {
-  mal_id: 9999, title: "System Offline", title_english: "System Offline", status: "Completed", episodes: 12, score: 9.8, synopsis: "API rate limit reached.", images: { jpg: { large_image_url: "https://s4.anilist.co/file/anilistcdn/media/anime/cover/large/bx101922-PEn1CTc93DQl.jpg" } }
-};
-
-const safeFetch = async (endpoint: string, limit = 15) => {
+const safeFetch = async (endpoint: string, limit = 24) => {
   try {
+    // We use Next.js revalidation to automatically update the site data every hour
     const res = await fetch(`${JIKAN_URL}${endpoint}&limit=${limit}`, { next: { revalidate: 3600 } });
     if (!res.ok) throw new Error("API Blocked");
     const data = await res.json();
-    return data.data || [OFFLINE_ANIME];
+    return data.data || [];
   } catch (error) {
-    return Array(limit).fill(OFFLINE_ANIME).map((a, i) => ({ ...a, mal_id: i + 1000 })); 
+    return []; 
   }
 };
 
+// AUTOMATED CATEGORIES
 export const fetchTrendingAnime = () => safeFetch('/top/anime?filter=airing');
 export const fetchPopularAnime = () => safeFetch('/top/anime?filter=bypopularity');
-export const fetchUpcomingAnime = () => safeFetch('/seasons/upcoming?');
 export const fetchFavoriteAnime = () => safeFetch('/top/anime?filter=favorite');
+// The "Coming Soon" Section
+export const fetchUpcomingAnime = () => safeFetch('/seasons/upcoming?');
 
+// REAL ANIME DATA EXTRACTION
 export const fetchAnimeById = async (id: string) => {
   try {
     const res = await fetch(`${JIKAN_URL}/anime/${id}/full`);
     if (!res.ok) throw new Error("API Blocked");
     const data = await res.json();
-    return data.data || OFFLINE_ANIME;
-  } catch (error) { return { ...OFFLINE_ANIME, mal_id: id }; }
+    return data.data || null;
+  } catch (error) { return null; }
 };
 
-// DYNAMIC EPISODE GENERATOR
-export const fetchAnimeEpisodes = async (id: string, totalEpisodesFromDetails: number | null) => {
-  try {
-    // We fetch the first page of episodes from the API for titles
-    const res = await fetch(`${JIKAN_URL}/anime/${id}/episodes`);
-    const data = await res.json();
-    
-    // If the API returns detailed episodes, use them. 
-    // Otherwise, mathematically generate the exact number of episodes based on the show's total length (e.g. 1000+ for One Piece)
-    if (data.data && data.data.length > 0) {
-      return data.data;
-    } else {
-      const count = totalEpisodesFromDetails || 12; // Fallback to 12 if still airing and unknown
-      return Array.from({ length: count }, (_, i) => ({ mal_id: i + 1, title: `Episode ${i + 1}` }));
-    }
-  } catch (error) { 
-    const count = totalEpisodesFromDetails || 12;
-    return Array.from({ length: count }, (_, i) => ({ mal_id: i + 1, title: `Episode ${i + 1}` }));
-  }
+// UNIVERSAL EPISODE CALCULATOR
+export const calculateEpisodes = (anime: any) => {
+  // 1. If the database knows the exact total (e.g., completed shows), use it.
+  if (anime.episodes) return anime.episodes;
+  
+  // 2. If it is currently airing, MyAnimeList might say "null". 
+  // We check if it's a known long-running show.
+  const name = anime.title_english || anime.title || "";
+  if (name.includes("One Piece")) return 1100; // Safe minimum for One Piece
+  if (name.includes("Detective Conan")) return 1120;
+  
+  // 3. Default ongoing season fallback
+  return 12;
 };
