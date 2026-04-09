@@ -2,6 +2,7 @@ import { fetchTrendingAnime, fetchPopularAnime, fetchUpcomingAnime, fetchFavorit
 import Link from "next/link";
 import ContinueWatching from "@/components/ContinueWatching";
 
+// 1. REUSABLE COMPONENT
 const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => {
   if (!animeList || animeList.length === 0) return null;
   return (
@@ -37,6 +38,7 @@ const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => 
   );
 };
 
+// 2. MAIN PAGE
 export default async function Home() {
   const [trending, popular, upcoming, favorites] = await Promise.all([
     fetchTrendingAnime(),
@@ -49,6 +51,7 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#09090b] pb-20 overflow-x-hidden">
+      {/* HERO */}
       {heroAnime && (
         <section className="relative w-full h-[70vh] md:h-[85vh] flex items-center">
           <div className="absolute inset-0 w-full h-full">
@@ -58,11 +61,11 @@ export default async function Home() {
           </div>
           <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-8 w-full pt-20">
             <div className="max-w-2xl">
-              <span className="px-2 py-1 bg-[#ff4d4d] text-white text-xs font-black rounded tracking-widest uppercase shadow-[0_0_10px_rgba(255,77,77,0.5)]">Spotlight</span>
+              <span className="px-2 py-1 bg-[#ff4d4d] text-white text-xs font-black rounded tracking-widest uppercase">Spotlight</span>
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mt-4 mb-4 leading-tight">
                 {heroAnime.title_english || heroAnime.title}
               </h1>
-              <p className="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 leading-relaxed max-w-xl">
+              <p className="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 max-w-xl">
                 {heroAnime.synopsis}
               </p>
               <Link href={`/anime/${heroAnime.mal_id}`} className="px-8 py-4 bg-[#ff4d4d] text-white font-bold rounded-full hover:scale-105 transition-all inline-flex items-center gap-2">
@@ -73,8 +76,10 @@ export default async function Home() {
         </section>
       )}
 
+      {/* GRID AREA */}
       <div className="relative z-20 -mt-10 md:-mt-16 max-w-[1600px] mx-auto px-4 md:px-8">
         <div className="flex flex-col lg:flex-row gap-10">
+          
           <div className="flex-grow flex flex-col gap-2">
             <ContinueWatching />
             <AnimeRow title="Trending Now" animeList={trending.slice(1)} />
@@ -110,6 +115,7 @@ export default async function Home() {
               </div>
             </div>
           </aside>
+
         </div>
       </div>
     </main>
