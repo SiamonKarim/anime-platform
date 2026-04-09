@@ -2,6 +2,7 @@ import { fetchTrendingAnime, fetchPopularAnime, fetchUpcomingAnime, fetchFavorit
 import Link from "next/link";
 import ContinueWatching from "@/components/ContinueWatching";
 
+// 1. REUSABLE ANIME ROW COMPONENT
 const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => {
   if (!animeList || animeList.length === 0) return null;
   return (
@@ -15,7 +16,7 @@ const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => 
           <Link 
             href={`/anime/${anime.mal_id}`} 
             key={anime.mal_id} 
-            className="group flex-none w-[140px] md:w-[180px] lg:w-[200px] snap-start flex flex-col gap-3 relative"
+            className="group flex-none w-[140px] md:w-[180px] lg:w-[200px] snap-start flex flex-col gap-3"
           >
             <div className="relative aspect-[2/3] w-full rounded-xl overflow-hidden bg-[#18181b] shadow-lg border border-white/5">
               <img 
@@ -24,15 +25,10 @@ const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => 
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110 group-hover:opacity-40" 
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
-                <i className="fas fa-play-circle text-5xl text-[#ff4d4d] drop-shadow-xl scale-75 group-hover:scale-100 transition-transform duration-300"></i>
+                <i className="fas fa-play-circle text-5xl text-[#ff4d4d] drop-shadow-xl"></i>
               </div>
               <div className="absolute top-2 left-2 flex flex-col gap-1">
                 <span className="bg-[#ff4d4d] text-white text-[10px] font-black px-2 py-0.5 rounded shadow-md tracking-wider">HD</span>
-                {anime.episodes && (
-                  <span className="bg-black/80 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded shadow-md border border-white/10">
-                    EP {anime.episodes}
-                  </span>
-                )}
               </div>
             </div>
             <h3 className="text-gray-300 font-medium text-sm truncate group-hover:text-[#ff4d4d] transition-colors">
@@ -45,6 +41,7 @@ const AnimeRow = ({ title, animeList }: { title: string, animeList: any[] }) => 
   );
 };
 
+// 2. MAIN HOME COMPONENT
 export default async function Home() {
   const [trending, popular, upcoming, favorites] = await Promise.all([
     fetchTrendingAnime(),
@@ -57,7 +54,8 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen bg-[#09090b] pb-20 overflow-x-hidden">
-      {/* 1. HERO SECTION */}
+      
+      {/* HERO SPOTLIGHT */}
       {heroAnime && (
         <section className="relative w-full h-[70vh] md:h-[85vh] flex items-center">
           <div className="absolute inset-0 w-full h-full">
@@ -67,16 +65,14 @@ export default async function Home() {
           </div>
           <div className="relative z-10 max-w-[1600px] mx-auto px-4 md:px-8 w-full pt-20">
             <div className="max-w-2xl">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="px-2 py-1 bg-[#ff4d4d] text-white text-xs font-black rounded tracking-widest uppercase shadow-[0_0_10px_rgba(255,77,77,0.5)]">Spotlight</span>
-              </div>
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mb-4 leading-tight drop-shadow-2xl">
+              <span className="px-2 py-1 bg-[#ff4d4d] text-white text-xs font-black rounded tracking-widest uppercase shadow-[0_0_10px_rgba(255,77,77,0.5)]">Spotlight</span>
+              <h1 className="text-4xl md:text-6xl lg:text-7xl font-black text-white mt-4 mb-4 leading-tight">
                 {heroAnime.title_english || heroAnime.title}
               </h1>
-              <p className="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 md:line-clamp-4 leading-relaxed max-w-xl">
+              <p className="text-gray-300 text-sm md:text-base mb-8 line-clamp-3 leading-relaxed max-w-xl">
                 {heroAnime.synopsis}
               </p>
-              <Link href={`/anime/${heroAnime.mal_id}`} className="px-8 py-4 bg-[#ff4d4d] text-white font-bold rounded-full hover:scale-105 hover:shadow-[0_0_25px_rgba(255,77,77,0.6)] transition-all duration-300 inline-flex items-center gap-2">
+              <Link href={`/anime/${heroAnime.mal_id}`} className="px-8 py-4 bg-[#ff4d4d] text-white font-bold rounded-full hover:scale-105 transition-all inline-flex items-center gap-2">
                 <i className="fas fa-play"></i> Watch Now
               </Link>
             </div>
@@ -84,20 +80,20 @@ export default async function Home() {
         </section>
       )}
 
-      {/* 2. MAIN CONTENT AREA (GRID) */}
+      {/* CONTENT GRID */}
       <div className="relative z-20 -mt-10 md:-mt-16 max-w-[1600px] mx-auto px-4 md:px-8">
         <div className="flex flex-col lg:flex-row gap-10">
           
-          {/* LEFT: CONTENT ROWS */}
-          <div className="flex-grow flex flex-col gap-4">
+          {/* LEFT COLUMN: SCROLLING ROWS */}
+          <div className="flex-grow flex flex-col gap-2">
             <ContinueWatching />
-            <AnimeRow title="Trending This Week" animeList={trending.slice(1)} />
-            <AnimeRow title="All-Time Popular" animeList={popular} />
-            <AnimeRow title="Fan Favorites" animeList={favorites} />
+            <AnimeRow title="Trending Now" animeList={trending.slice(1)} />
+            <AnimeRow title="Most Popular" animeList={popular} />
+            <AnimeRow title="Top Favorites" animeList={favorites} />
             <AnimeRow title="Coming Soon" animeList={upcoming} />
           </div>
 
-          {/* RIGHT: TOP 10 SIDEBAR */}
+          {/* RIGHT COLUMN: TOP 10 SIDEBAR */}
           <aside className="w-full lg:w-80 flex-none">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 sticky top-24">
               <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
@@ -110,14 +106,14 @@ export default async function Home() {
                       {String(index + 1).padStart(2, '0')}
                     </span>
                     <div className="w-14 h-20 bg-white/5 rounded-lg overflow-hidden flex-none">
-                      <img src={anime.images.jpg.large_image_url} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="" />
+                      <img src={anime.images?.jpg?.large_image_url} className="w-full h-full object-cover group-hover:scale-110 transition duration-300" alt="" />
                     </div>
                     <div className="flex flex-col justify-center min-w-0">
                       <h4 className="text-sm font-bold text-gray-200 line-clamp-1 group-hover:text-[#ff4d4d] transition-colors">
                         {anime.title_english || anime.title}
                       </h4>
                       <p className="text-[10px] text-gray-500 font-bold uppercase mt-1">
-                        <i className="fas fa-star text-yellow-500 mr-1"></i> {anime.score || "N/A"} • {anime.type}
+                        ★ {anime.score || "N/A"} • {anime.type}
                       </p>
                     </div>
                   </Link>
