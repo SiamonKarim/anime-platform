@@ -1,5 +1,7 @@
 import { fetchTrendingAnime } from "@/lib/api";
 import Link from "next/link";
+import ContinueWatching from "@/components/ContinueWatching";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 
 export default async function Home() {
   const trendingAnime = await fetchTrendingAnime();
@@ -19,8 +21,20 @@ export default async function Home() {
           <button type="submit" className="bg-[#333] text-white px-4 hover:bg-[#ff2e00] hover:text-black transition"><i className="fas fa-search"></i></button>
         </form>
 
-        <div className="flex gap-8 text-sm text-gray-400" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
-          <Link href="/" className="hover:text-[#ff2e00] transition">HOME</Link>
+        <div className="flex gap-8 text-sm text-gray-400 items-center" style={{ fontFamily: "'JetBrains Mono', monospace" }}>
+          <Link href="/" className="hidden md:block hover:text-[#ff2e00] transition">HOME</Link>
+          
+          {/* THE IDENTITY MATRIX */}
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="px-6 py-2 bg-[#ff2e00] text-black font-bold text-sm uppercase hover:bg-white transition" style={{ fontFamily: "'Anton', sans-serif" }}>
+                Sign In
+              </button>
+            </SignInButton>
+          </SignedOut>
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
         </div>
       </nav>
 
@@ -43,9 +57,12 @@ export default async function Home() {
         </div>
       </section>
 
+      {/* INJECTING THE MEMORY ENGINE */}
+      <ContinueWatching />
+
       {/* MASSIVE TRENDING GRID */}
-      <section className="p-6 md:p-12 max-w-7xl mx-auto w-full">
-        <h2 className="text-2xl text-white uppercase mb-6 tracking-wide" style={{ fontFamily: "'Anton', sans-serif" }}>GLOBAL DATABASE //</h2>
+      <section className="p-6 md:px-12 pb-12 max-w-7xl mx-auto w-full">
+        <h2 className="text-2xl text-white uppercase mb-6 tracking-wide mt-6" style={{ fontFamily: "'Anton', sans-serif" }}>GLOBAL DATABASE //</h2>
         
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
           {trendingAnime.map((anime: any) => (
