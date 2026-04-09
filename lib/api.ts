@@ -1,52 +1,37 @@
 const JIKAN_URL = 'https://api.jikan.moe/v4';
-// 1. YOUR PRIVATE PROXY URL (Must end with /)
+// YOUR PRIVATE PROXY
 const CORS_PROXY = 'https://cors-qpo5.onrender.com/'; 
-const CONSUMET_URL = 'https://api.consumet.org/anime/gogoanime';
+// STABLE STREAMING API
+const STREAM_API = 'https://api.amvstr.me/api/v2/stream';
 
 export const fetchTrendingAnime = async () => {
-  try {
-    const res = await fetch(`${JIKAN_URL}/top/anime?filter=airing&limit=20`);
-    const data = await res.json();
-    return data.data || [];
-  } catch (err) { return []; }
+  const res = await fetch(`${JIKAN_URL}/top/anime?filter=airing&limit=20`);
+  const data = await res.json();
+  return data.data || [];
+};
+
+export const fetchPopularAnime = async () => {
+  const res = await fetch(`${JIKAN_URL}/top/anime?filter=bypopularity&limit=20`);
+  const data = await res.json();
+  return data.data || [];
+};
+
+export const fetchUpcomingAnime = async () => {
+  const res = await fetch(`${JIKAN_URL}/seasons/upcoming?limit=20`);
+  const data = await res.json();
+  return data.data || [];
+};
+
+export const fetchFavoriteAnime = async () => {
+  const res = await fetch(`${JIKAN_URL}/top/anime?filter=favorite&limit=20`);
+  const data = await res.json();
+  return data.data || [];
 };
 
 export const fetchAnimeById = async (id: string) => {
-  try {
-    const res = await fetch(`${JIKAN_URL}/anime/${id}/full`);
-    const data = await res.json();
-    return data.data;
-  } catch (err) { return null; }
-};
-
-// 2. THE SMART AUTOMATION ENGINE
-export const fetchVideoStream = async (animeTitle: string, ep: number) => {
-  try {
-    // STEP A: Clean the title for better search results
-    const searchTitle = animeTitle.split(':')[0].split('(')[0].trim();
-    
-    // STEP B: Search the video server for the official ID
-    const searchRes = await fetch(`${CORS_PROXY}${CONSUMET_URL}/${encodeURIComponent(searchTitle)}`);
-    const searchData = await searchRes.json();
-    
-    const animeId = searchData.results?.[0]?.id;
-    if (!animeId) return null;
-
-    // STEP C: Fetch the actual .m3u8 streaming links
-    const streamRes = await fetch(`${CORS_PROXY}${CONSUMET_URL}/watch/${animeId}-episode-${ep}`);
-    const streamData = await streamRes.json();
-    
-    // STEP D: Find the HLS (.m3u8) source
-    const hlsSource = streamData.sources?.find((s: any) => s.isM3U8) || streamData.sources?.[0];
-    
-    if (!hlsSource?.url) return null;
-
-    // STEP E: Return the URL wrapped in your proxy
-    return `${CORS_PROXY}${hlsSource.url}`;
-  } catch (err) {
-    console.error("Automation Error:", err);
-    return null;
-  }
+  const res = await fetch(`${JIKAN_URL}/anime/${id}/full`);
+  const data = await res.json();
+  return data.data;
 };
 
 export const calculateEpisodes = (anime: any) => {
@@ -54,4 +39,25 @@ export const calculateEpisodes = (anime: any) => {
   const name = anime?.title_english || anime?.title || "";
   if (name.includes("One Piece")) return 1100;
   return 12;
+};
+
+// --- THE NEW AMVSTR STREAMER ---
+export const fetchVideoStream = async (animeTitle: string, ep: number) => {
+  try {
+    // 1. Clean the title for the URL (e.g. "One Piece" -> "one-piece")
+    const slug = animeTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    
+    // 2. Ping the stable Amvstr API through your proxy
+    const res = await fetch(`${CORS_PROXY}${STREAM_API}/${slug}-episode-${ep}`);
+    
+    if (!res.ok) return null;
+    const data = await res.json();
+
+    // 3. Extract the master HLS (.m3u8) link
+    const rawUrl = data.data?.stream?.multi?.main || data.data?.stream?.file;
+    
+    return rawUrl ? `${CORS_PROXY}${rawUrl}` : null;
+  } catch (err) {
+    return null;
+  }
 };
