@@ -2,20 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg: #050505;
-  --accent: #ff2e00;
-  --text: #ffffff;
-  --surface: #111111;
-}
-
 body {
-  background-color: var(--bg);
-  color: var(--text);
+  background-color: #09090b;
+  color: #ffffff;
+  overflow-x: hidden;
 }
 
-/* Custom Scrollbar */
-::-webkit-scrollbar { width: 8px; }
-::-webkit-scrollbar-track { background: var(--bg); }
-::-webkit-scrollbar-thumb { background: #333; }
-::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+/* MAGIC SCROLLBAR HIDER 
+  This allows smooth horizontal scrolling without the ugly grey bar 
+*/
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
