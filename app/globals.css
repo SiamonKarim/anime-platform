@@ -1,20 +1,12 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-body {
-  background-color: #09090b;
-  color: #ffffff;
-  overflow-x: hidden;
+/* Custom Vertical Scrollbar for Episodes */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
 }
-
-/* MAGIC SCROLLBAR HIDER 
-  This allows smooth horizontal scrolling without the ugly grey bar 
-*/
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
 }
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: #ff4d4d;
+  border-radius: 10px;
 }

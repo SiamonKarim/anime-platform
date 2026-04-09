@@ -3,10 +3,11 @@ import { fetchAnimeById, fetchAnimeEpisodes } from "@/lib/api";
 import Link from "next/link";
 
 export default async function WatchPage({ params, searchParams }: any) {
-  const [anime, episodes] = await Promise.all([
-    fetchAnimeById(params.id),
-    fetchAnimeEpisodes(params.id, anime.episodes)
-  ]);
+  // 1. Fetch the anime details FIRST
+  const anime = await fetchAnimeById(params.id);
+
+  // 2. NOW fetch the episodes using the newly acquired episode count
+  const episodes = await fetchAnimeEpisodes(params.id, anime.episodes);
 
   const epNumber = searchParams.ep ? parseInt(searchParams.ep) : 1;
   const animeName = anime.title_english || anime.title;
@@ -16,20 +17,14 @@ export default async function WatchPage({ params, searchParams }: any) {
       
       {/* Immersive Background Blur */}
       <div className="fixed inset-0 w-full h-[60vh] opacity-20 z-0 pointer-events-none">
-        <img src={anime.images.jpg.large_image_url} className="w-full h-full object-cover blur-3xl" />
+        <img src={anime.images?.jpg?.large_image_url} className="w-full h-full object-cover blur-3xl" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#09090b]"></div>
       </div>
 
-      <nav className="relative z-10 p-6 flex justify-between items-center max-w-7xl mx-auto">
-        <Link href="/" className="text-white hover:text-[#ff4d4d] flex items-center gap-2 transition font-medium">
-          <i className="fas fa-arrow-left"></i> Back to Browse
-        </Link>
-      </nav>
-
       {/* The Theater */}
-      <section className="relative z-10 w-full px-4 md:px-6">
+      <section className="relative z-10 w-full px-4 md:px-8 max-w-[1600px] mx-auto pt-8">
         <AnimePlayer 
-          posterUrl={anime.images.jpg.large_image_url}
+          posterUrl={anime.images?.jpg?.large_image_url}
           animeId={params.id}
           animeTitle={animeName}
           episodeNumber={epNumber}
@@ -39,8 +34,8 @@ export default async function WatchPage({ params, searchParams }: any) {
           <div className="flex-1">
             <h1 className="text-3xl md:text-5xl font-bold text-white mb-3 tracking-tight">{animeName}</h1>
             <div className="flex items-center gap-3 text-sm font-semibold mb-6">
-              <span className="text-yellow-400"><i className="fas fa-star"></i> {anime.score}</span>
-              <span className="bg-white/10 px-2 py-1 rounded text-gray-300">{anime.status}</span>
+              <span className="text-yellow-400"><i className="fas fa-star"></i> {anime.score || "N/A"}</span>
+              <span className="bg-white/10 px-2 py-1 rounded text-gray-300">{anime.status || "Unknown"}</span>
               <span className="bg-[#ff4d4d]/20 text-[#ff4d4d] px-2 py-1 rounded border border-[#ff4d4d]/30">HD</span>
             </div>
             <p className="text-gray-400 leading-relaxed text-sm md:text-base">{anime.synopsis}</p>
@@ -48,12 +43,14 @@ export default async function WatchPage({ params, searchParams }: any) {
         </div>
       </section>
 
-      {/* Clean Episode Selector */}
-      <section className="relative z-10 max-w-5xl mx-auto px-4 md:px-6 mt-16">
+      {/* Scrollable Episode Selector (Crucial for One Piece) */}
+      <section className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 mt-12">
         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <i className="fas fa-list text-[#ff4d4d]"></i> Episodes
+          <i className="fas fa-list text-[#ff4d4d]"></i> Episodes ({episodes.length})
         </h3>
-        <div className="grid grid-cols-3 sm:grid-cols-5 md:grid-cols-8 gap-3">
+        
+        {/* We limit the height and add a scrollbar so 1000+ episodes fit cleanly */}
+        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#ff4d4d] scrollbar-track-white/5">
           {episodes.map((ep: any) => {
             const isActive = ep.mal_id === epNumber;
             return (
