@@ -1,3 +1,4 @@
+// FORCING VERCEL UPDATE 1
 import AnimePlayer from "@/components/AnimePlayer";
 import { fetchAnimeById, fetchAnimeEpisodes } from "@/lib/api";
 import Link from "next/link";
