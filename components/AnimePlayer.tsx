@@ -1,17 +1,15 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
 import { MediaPlayer, MediaProvider, Poster } from '@vidstack/react';
 import { defaultLayoutIcons, DefaultVideoLayout } from '@vidstack/react/player/layouts/default';
 
-export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNumber }: any) {
-  // A completely unblockable, high-quality HLS test stream
-  const RELIABLE_STREAM = "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8";
+export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNumber, videoUrl }: any) {
   
   useEffect(() => {
-    // Save history seamlessly
+    // Save history to the Memory Engine
     localStorage.setItem('projectX_history', JSON.stringify({
       id: animeId,
       title: animeTitle,
@@ -26,9 +24,11 @@ export default function AnimePlayer({ posterUrl, animeId, animeTitle, episodeNum
       <div className="absolute top-4 left-4 z-50 bg-black/60 backdrop-blur-md px-3 py-1 rounded-full text-xs font-bold text-[#ff4d4d] tracking-widest uppercase border border-white/10">
         Playing Ep {episodeNumber}
       </div>
+      
+      {/* If a real video stream is passed, it plays it. Otherwise, it loads a placeholder stream */}
       <MediaPlayer 
-        title={`Episode ${episodeNumber}`} 
-        src={RELIABLE_STREAM} 
+        title={`${animeTitle} - Episode ${episodeNumber}`} 
+        src={videoUrl || "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8"} 
         playsInline
         className="w-full aspect-video"
       >

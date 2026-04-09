@@ -1,44 +1,44 @@
-// FORCING VERCEL UPDATE 1
 import AnimePlayer from "@/components/AnimePlayer";
-import { fetchAnimeById, fetchAnimeEpisodes } from "@/lib/api";
+import EpisodeSelector from "@/components/EpisodeSelector";
+import { fetchAnimeById } from "@/lib/api";
 import Link from "next/link";
 
-// 1. Next.js 15 Strict Types: URLs are now Promises
 type Props = {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
 export default async function WatchPage(props: Props) {
-  // 2. We MUST await the URL parameters before using them
   const params = await props.params;
   const searchParams = await props.searchParams;
 
-  // 3. Now we safely fetch the database using the awaited ID
+  // Fetch the anime details
   const anime = await fetchAnimeById(params.id);
-  const episodes = await fetchAnimeEpisodes(params.id, anime.episodes);
 
-  // 4. Safely parse the episode number
+  // Safely parse the requested episode
   const epQuery = searchParams.ep;
-  const epNumber = epQuery ? parseInt(epQuery as string) : 1;
+  const currentEpNumber = epQuery ? parseInt(epQuery as string) : 1;
   const animeName = anime.title_english || anime.title;
+  
+  // The ultimate fallback: If the database knows the total, use it. 
+  // If it's One Piece and the DB fails, force it to 1100+. If unknown, default to 12.
+  const totalEpisodesCount = anime.episodes || (animeName.includes("One Piece") ? 1100 : 12);
 
   return (
     <main className="min-h-screen bg-[#09090b] text-gray-200 pb-20">
       
-      {/* Immersive Background Blur */}
       <div className="fixed inset-0 w-full h-[60vh] opacity-20 z-0 pointer-events-none">
         <img src={anime.images?.jpg?.large_image_url} className="w-full h-full object-cover blur-3xl" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-[#09090b]"></div>
       </div>
 
-      {/* The Theater */}
       <section className="relative z-10 w-full px-4 md:px-8 max-w-[1600px] mx-auto pt-8">
         <AnimePlayer 
           posterUrl={anime.images?.jpg?.large_image_url}
           animeId={params.id}
           animeTitle={animeName}
-          episodeNumber={epNumber}
+          episodeNumber={currentEpNumber}
+          // videoUrl="YOUR_REAL_BACKEND_STREAM_URL_GOES_HERE.m3u8"
         />
         
         <div className="max-w-5xl mx-auto mt-8 flex flex-col md:flex-row gap-8 items-start">
@@ -54,30 +54,17 @@ export default async function WatchPage(props: Props) {
         </div>
       </section>
 
-      {/* Scrollable Episode Selector */}
-      <section className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 mt-12">
+      {/* Injecting the 1000+ Episode Engine */}
+      <section className="relative z-10 max-w-5xl mx-auto px-4 md:px-8 mt-12 border-t border-white/5 pt-8">
         <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
-          <i className="fas fa-list text-[#ff4d4d]"></i> Episodes ({episodes.length})
+          <i className="fas fa-list text-[#ff4d4d]"></i> Episodes ({totalEpisodesCount})
         </h3>
         
-        <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3 max-h-[400px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-[#ff4d4d] scrollbar-track-white/5">
-          {episodes.map((ep: any) => {
-            const isActive = ep.mal_id === epNumber;
-            return (
-              <Link 
-                key={ep.mal_id} 
-                href={`/anime/${anime.mal_id}?ep=${ep.mal_id}`}
-                className={`py-3 rounded-lg text-center font-bold text-sm transition-all duration-300 ${
-                  isActive 
-                    ? "bg-[#ff4d4d] text-white shadow-[0_0_15px_rgba(255,77,77,0.4)] scale-105" 
-                    : "bg-white/5 text-gray-400 hover:bg-white/10 hover:text-white"
-                }`}
-              >
-                {ep.mal_id}
-              </Link>
-            );
-          })}
-        </div>
+        <EpisodeSelector 
+          totalEpisodes={totalEpisodesCount} 
+          currentEpisode={currentEpNumber} 
+          animeId={params.id} 
+        />
       </section>
 
     </main>
