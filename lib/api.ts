@@ -57,36 +57,43 @@ export const searchAnime = async (query: string) => {
 // --- THE SMART SEARCH-FIRST ENGINE ---
 export const fetchVideoStream = async (animeTitle: string, ep: number) => {
   try {
-    // 1. Clean the title for a broad search
-    const searchTitle = animeTitle.split(':')[0].split('(')[0].trim();
+    // 1. Clean the title for a perfect search
+    const searchTitle = animeTitle.split(':')[0].split('(')[0].replace('Part', '').trim();
     
-    // 2. SEARCH the video provider first to get the REAL ID
-    // We use Gogoanime as the provider via Consumet/Amvstr
+    // 2. SEARCH via the Gogoanime provider
     const searchUrl = `https://api.consumet.org/anime/gogoanime/${encodeURIComponent(searchTitle)}`;
     const searchRes = await fetch(`${CORS_PROXY}${searchUrl}`);
     const searchData = await searchRes.json();
     
-    // Pick the first search result (the most relevant one)
-    const officialId = searchData.results?.[0]?.id;
-    
-    if (!officialId) {
-      console.error("❌ Could not find a matching ID for:", searchTitle);
-      return [];
-    }
+    if (!searchData.results || searchData.results.length === 0) return [];
 
-    console.log("✅ Match Found! Using ID:", officialId);
+    // 3. FIND THE BEST MATCH (Ignore movies/specials)
+    // We look for the result that has 'one-piece' in the ID but NOT 'movie' or 'special'
+    let officialId = searchData.results[0].id;
 
-    // 3. Now fetch the stream using that official ID
+    const mainSeries = searchData.results.find((result: any) => 
+      !result.id.includes('movie') && 
+      !result.id.includes('special') &&
+      !result.id.includes('dub') // Priority to Sub for speed
+    );
+
+    if (mainSeries) officialId = mainSeries.id;
+
+    console.log("🎯 Match Found! Official ID:", officialId);
+
+    // 4. FETCH THE STREAM
     const streamUrl = `https://api.consumet.org/anime/gogoanime/watch/${officialId}-episode-${ep}`;
     const streamRes = await fetch(`${CORS_PROXY}${streamUrl}`);
+    
+    if (!streamRes.ok) throw new Error("Stream server down");
+    
     const streamData = await streamRes.json();
-
     const sources: { name: string; url: string }[] = [];
     
     if (streamData.sources) {
       streamData.sources.forEach((s: any) => {
         sources.push({ 
-          name: s.quality.toUpperCase(), 
+          name: s.quality === 'default' ? 'AUTO' : s.quality.toUpperCase(), 
           url: `${CORS_PROXY}${s.url}` 
         });
       });
@@ -95,7 +102,7 @@ export const fetchVideoStream = async (animeTitle: string, ep: number) => {
     return sources;
 
   } catch (err) { 
-    console.error("🔥 Stream Fetch Error:", err);
+    console.error("🔥 PROXIED FETCH FAILED:", err);
     return []; 
   }
 };
