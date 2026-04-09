@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@clerk/nextjs": "^7.0.12",
+    "@clerk/themes": "^2.4.57",
     "@vidstack/react": "^1.12.13",
     "axios": "^1.15.0",
     "next": "16.2.3",
